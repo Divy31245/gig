@@ -1,5 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Grid, Rating, TextField, InputAdornment, MenuItem, Select, FormControl, InputLabel, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Grid,
+  Rating,
+  TextField,
+  InputAdornment,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  CircularProgress,
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
 
@@ -9,10 +21,10 @@ const UserGrid = () => {
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(true); // Loading state
   const navigate = useNavigate();
-
+  const apiurl = process.env.REACT_APP_API_URL;
   const getAllUserData = async () => {
     try {
-      const response = await fetch("/user/talent-artists");
+      const response = await fetch(`${apiurl}/user/talent-artists`);
       const data = await response.json();
       setUsers(data);
       setLoading(false); // Set loading to false once data is fetched
@@ -38,13 +50,19 @@ const UserGrid = () => {
   const filteredUsers = users.filter(
     (user) =>
       (user.name.toLowerCase().includes(searchQuery) ||
-      user.category.some((cat) => cat.toLowerCase().includes(searchQuery))) &&
+        user.category.some((cat) => cat.toLowerCase().includes(searchQuery))) &&
       (category === "" || user.category.includes(category))
   );
 
   return (
     <Box sx={{ padding: 2, width: "80%" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 3,
+        }}
+      >
         <TextField
           variant="outlined"
           fullWidth
@@ -79,7 +97,14 @@ const UserGrid = () => {
         </FormControl>
       </Box>
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "50vh",
+          }}
+        >
           <CircularProgress />
         </Box>
       ) : (
@@ -88,7 +113,7 @@ const UserGrid = () => {
             <Grid item xs={12} sm={6} md={4} lg={3} key={user._id}>
               <Box
                 sx={{
-                  height:"60vh",
+                  height: "60vh",
                   border: "1px solid #ddd",
                   borderRadius: "8px",
                   overflow: "hidden",

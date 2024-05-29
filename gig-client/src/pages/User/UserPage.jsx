@@ -47,6 +47,8 @@ const UserPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [bookingMessage, setBookingMessage] = useState("");
 
+  const apiurl = process.env.REACT_APP_API_URL;
+
   const CustomLinearProgress = styled(LinearProgress)(({ theme }) => ({
     height: 10,
     borderRadius: 5,
@@ -65,7 +67,7 @@ const UserPage = () => {
 
   const getUserRatings = async () => {
     try {
-      const response = await fetch(`/user/ratings/${id}`);
+      const response = await fetch(`${apiurl}/user/ratings/${id}`);
       const data = await response.json();
       setRatings(data);
     } catch (error) {
@@ -76,7 +78,7 @@ const UserPage = () => {
   const getRatingDistribution = async () => {
     try {
       const response = await fetch(
-        `/user/ratings-dist/${id}`
+        `${apiurl}/user/ratings-dist/${id}`
       );
       const data = await response.json();
       setDistribution(data);
@@ -87,7 +89,7 @@ const UserPage = () => {
 
   const getUserDetails = async () => {
     try {
-      const response = await fetch(`/user/${id}`);
+      const response = await fetch(`${apiurl}/user/${id}`);
       const data = await response.json();
       setUser(data);
     } catch (error) {
@@ -107,7 +109,7 @@ const UserPage = () => {
         ],
       };
 
-      const response = await fetch(`/user/rating/${id}`, {
+      const response = await fetch(`${apiurl}/user/rating/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +137,7 @@ const UserPage = () => {
   const handleDatePickerClose = async (confirm) => {
     if (confirm) {
       try {
-        const response = await fetch("/user/book", {
+        const response = await fetch(`${apiurl}/user/book`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

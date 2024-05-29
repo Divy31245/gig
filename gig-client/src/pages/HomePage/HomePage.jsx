@@ -23,13 +23,11 @@ const Homepage = () => {
   const location = useLocation();
   const [users, setUsers] = useState();
   const [loading, setLoading] = useState(false);
-
+  const apiurl = process.env.REACT_APP_API_URL;
   const getTopUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        "/user/top-talent-artists"
-      );
+      const response = await fetch(`${apiurl}/user/top-talent-artists`);
       const data = await response.json();
       setUsers(data);
       setLoading(false);
@@ -321,7 +319,7 @@ const Homepage = () => {
                           }}
                         />
                       </button>
-                      <Typography variant="h6" sx={{ marginTop: '0' }}>
+                      <Typography variant="h6" sx={{ marginTop: "0" }}>
                         {user.name}
                       </Typography>
                       <Box

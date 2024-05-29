@@ -35,6 +35,7 @@ const Myaccount = () => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const apiurl = process.env.REACT_APP_API_URL;
   const handleUpload = async () => {
     setUploadSuccess(false);
     setUploadError(null);
@@ -48,7 +49,7 @@ const Myaccount = () => {
     formData.append("profileImage", image);
 
     try {
-      const response = await fetch(`/user/upload/${id}`, {
+      const response = await fetch(`${apiurl}/user/upload/${id}`, {
         method: "POST",
         body: formData,
       });

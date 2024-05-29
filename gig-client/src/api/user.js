@@ -1,6 +1,7 @@
+const apiurl = process.env.REACT_APP_API_URL;
 export const getUserInfo = async (id) => {
   try {
-    const response = await fetch(`/user/${id}`, {
+    const response = await fetch(`${apiurl}/user/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -23,7 +24,7 @@ export const getUserInfo = async (id) => {
 
 export const updateUserInfo = async (userId, userDetails) => {
   try {
-    const response = await fetch(`/user/${userId}`, {
+    const response = await fetch(`${apiurl}/user/${userId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -44,7 +45,7 @@ export const uploadProfileImage = async (userId, imageFile) => {
   formData.append('profileImage', imageFile);
 
   try {
-    const response = await fetch(`/user/upload/${userId}`, {
+    const response = await fetch(`${apiurl}/user/upload/${userId}`, {
       method: 'POST',
       body: formData,
     });

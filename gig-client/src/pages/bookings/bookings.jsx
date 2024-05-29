@@ -22,15 +22,16 @@ const Bookings = () => {
   const roles = useSelector(selectAuthRoles);
   const [bookingRequests, setBookingRequests] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const apiurl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const fetchBookingRequests = async () => {
       try {
         const response = roles.includes("talent_artist")
           ? await fetch(
-              `/user/artist/booking-requests/${userId}`
+              `${apiurl}/user/artist/booking-requests/${userId}`
             )
-          : await fetch(`/user/seeker/bookings/${userId}`);
+          : await fetch(`${apiurl}/user/seeker/bookings/${userId}`);
         const data = await response.json();
         setBookingRequests(data);
       } catch (error) {
@@ -45,7 +46,7 @@ const Bookings = () => {
     try {
       console.log(bookingId);
       const response = await fetch(
-        `/user/bookings/${bookingId}/approve`,
+        `${apiurl}/user/bookings/${bookingId}/approve`,
         {
           method: "PUT",
           headers: {
@@ -82,7 +83,7 @@ const Bookings = () => {
   const handleReject = async (bookingId) => {
     try {
       const response = await fetch(
-        `/user/bookings/${bookingId}/reject`,
+        `${apiurl}/user/bookings/${bookingId}/reject`,
         {
           method: "PUT",
           headers: {

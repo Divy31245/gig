@@ -1,6 +1,7 @@
+const apiurl = process.env.REACT_APP_API_URL;
 export const login = async (credentials) => {
   try {
-    const response = await fetch("/auth/login", {
+    const response = await fetch(`${apiurl}/auth/login`, {
       method: "POST", // Specify POST method for login request
       headers: {
         "Content-Type": "application/json", // Set appropriate header for JSON data
@@ -21,7 +22,7 @@ export const login = async (credentials) => {
 };
 export const register = async (credentials) => {
   try {
-    const response = await fetch("/auth/register", {
+    const response = await fetch(`${apiurl}/auth/register`, {
       method: "POST", // Specify POST method for login request
       headers: {
         "Content-Type": "application/json", // Set appropriate header for JSON data
@@ -43,7 +44,7 @@ export const register = async (credentials) => {
 
 export const logout = async () => {
   try {
-    const response = await fetch("/auth/logout/user", {
+    const response = await fetch(`${apiurl}/auth/logout/user`, {
       method: "GET", // Specify GET method for logout request
       headers: {
         "Content-Type": "application/json", // Set appropriate header for JSON data
@@ -72,7 +73,7 @@ export const googleSignin = async (response) => {
   try {
     if (!response.errors) {
       const postResponse = await fetch(
-        "/auth/login/user",
+        `${apiurl}/auth/login/user`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
