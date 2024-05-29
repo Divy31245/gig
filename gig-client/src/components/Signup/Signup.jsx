@@ -1,0 +1,231 @@
+import React, { useState, useEffect } from "react";
+import { GoogleLogin } from "@react-oauth/google";
+import "./Signup.css";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectAuthMessage,
+  registerAsync,
+  clearMessages,
+} from "../../features/authSlice";
+import IconButton from "@mui/material/IconButton";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { toast } from "react-toastify";
+
+function SignUpForm() {
+  const dispatch = useDispatch();
+  const successmsg = useSelector(selectAuthMessage);
+  const errormsg = useSelector((state) => state.auth.error);
+
+  const [state, setState] = useState({
+    name: "",
+    email: "",
+    password: "",
+    mobileNumber: "",
+    roles: ["talent_seeker"],
+    category: [],
+    description: "",
+    portfolio: [],
+  });
+
+  const [selectedRole, setSelectedRole] = useState("talent_seeker");
+  const [showPassword, setShowPassword] = useState(false);
+  const [signedup, setSignedup] = useState(false);
+  const [validationError, setValidationError] = useState("");
+  const [showError, setShowError] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => setSignedup(false), 5000);
+  }, [signedup]);
+
+  useEffect(() => {
+    if (successmsg) {
+      toast.success(successmsg);
+      setSignedup(true);
+      dispatch(clearMessages());
+    } else if (errormsg) {
+      setSignedup(false);
+      toast.error(errormsg);
+      dispatch(clearMessages());
+    }
+  }, [successmsg, errormsg, dispatch]);
+
+  const handleChange = (evt) => {
+    const value = evt.target.value;
+    setState({
+      ...state,
+      [evt.target.name]: value,
+    });
+  };
+
+  const validateForm = () => {
+    if (!state.name) return "Name is required.";
+    if (!state.email) return "Email is required.";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(state.email)) return "Email format is invalid.";
+    if (!state.mobileNumber) return "Mobile Number is required.";
+    if (!state.password) return "Password is required.";
+    if (state.roles.includes("talent_artist") && state.category.length === 0)
+      return "Please select at least one category.";
+    if (state.roles.includes("talent_artist") && !state.description)
+      return "Description is required.";
+    return null;
+  };
+
+  const handleOnSubmit = (evt) => {
+    evt.preventDefault();
+    const error = validateForm();
+    if (error) {
+      setValidationError(error);
+      setShowError(true);
+      setTimeout(() => setShowError(false), 2000);
+      return;
+    }
+    dispatch(registerAsync(state));
+    for (const key in state) {
+      setState({
+        ...state,
+        [key]: "",
+      });
+    }
+  };
+
+  const handleRoleSelection = (role) => {
+    setSelectedRole(role);
+    setState((prevState) => {
+      let updatedRoles = ["talent_seeker"];
+      if (role === "talent_artist") {
+        updatedRoles.push("talent_artist");
+      }
+      return { ...prevState, roles: updatedRoles };
+    });
+  };
+
+  const handleCategoryChange = (category) => {
+    setState((prevState) => {
+      const newCategories = prevState.category.includes(category)
+        ? prevState.category.filter((item) => item !== category)
+        : [...prevState.category, category];
+      return { ...prevState, category: newCategories };
+    });
+  };
+
+  const handleClickShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const categories = ["Musician", "Magician", "Singer", "Dancer"];
+
+  return (
+    <div className="form-container sign-up-container">
+      {!signedup && !showError ? (
+        <div className="sign-in-form">
+          <div className="spn2">Are you a</div>
+          <div className="btn-div">
+            <button
+              className={`btn-role ${
+                selectedRole === "talent_seeker" ? "selected" : ""
+              }`}
+              onClick={() => handleRoleSelection("talent_seeker")}
+            >
+              Talent Seeker
+            </button>
+            or
+            <button
+              className={`btn-role ${
+                selectedRole === "talent_artist" ? "selected" : ""
+              }`}
+              onClick={() => handleRoleSelection("talent_artist")}
+            >
+              Talent Artist
+            </button>
+          </div>
+          <input
+            type="text"
+            name="name"
+            value={state.name}
+            onChange={handleChange}
+            className="input-labels"
+            placeholder="Name"
+          />
+          <input
+            type="email"
+            name="email"
+            value={state.email}
+            onChange={handleChange}
+            placeholder="Email"
+            className="input-labels"
+          />
+          <input
+            type="text"
+            name="mobileNumber"
+            value={state.mobileNumber}
+            onChange={handleChange}
+            className="input-labels"
+            placeholder="Mobile Number"
+          />
+          <div style={{ position: "relative", width: "100%" }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={state.password}
+              onChange={handleChange}
+              className="input-labels"
+              placeholder="Password"
+              style={{ paddingRight: "40px", width: "100%" }}
+            />
+            <IconButton
+              onClick={handleClickShowPassword}
+              style={{ position: "absolute", right: "10px", top: "10px" }}
+            >
+              {showPassword ? (
+                <VisibilityOff fontSize="1.2rem" />
+              ) : (
+                <Visibility fontSize="1.2rem" />
+              )}
+            </IconButton>
+          </div>
+          {state.roles.includes("talent_artist") && (
+            <div className="main-category-div">
+              <div className="category-title">Choose your talent category</div>
+              <div className="categories">
+                {categories.map((category) => (
+                  <div key={category}>
+                    <input
+                      type="checkbox"
+                      id={category}
+                      name="category"
+                      value={category}
+                      checked={state.category.includes(category)}
+                      onChange={() => handleCategoryChange(category)}
+                    />
+                    <label htmlFor={category}>{category}</label>
+                  </div>
+                ))}
+              </div>
+              <textarea
+                name="description"
+                value={state.description}
+                onChange={handleChange}
+                placeholder="Tell us more about yourself"
+                className="no-resize-textarea input-labels"
+              ></textarea>
+            </div>
+          )}
+
+          <button className="signup-btn" onClick={handleOnSubmit}>
+            Sign Up
+          </button>
+        </div>
+      ) : (
+        showError ? (
+          <div className="error-message">{validationError}</div>
+        ) : (
+          <div>User signed up successfully! Please log in to continue.</div>
+        )
+      )}
+    </div>
+  );
+}
+
+export default SignUpForm;
