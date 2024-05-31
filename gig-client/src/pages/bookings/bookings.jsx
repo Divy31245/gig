@@ -29,8 +29,8 @@ const Bookings = () => {
       try {
         const response = roles.includes("talent_artist")
           ? await fetch(
-              `${apiurl}/user/artist/booking-requests/${userId}`
-            )
+            `${apiurl}/user/artist/booking-requests/${userId}`
+          )
           : await fetch(`${apiurl}/user/seeker/bookings/${userId}`);
         const data = await response.json();
         setBookingRequests(data);
@@ -41,6 +41,9 @@ const Bookings = () => {
 
     fetchBookingRequests();
   }, [userId, roles]);
+
+  const [isApproved, setIsApproved] = useState(false);
+  const [isRejected, setIsRejected] = useState(false);
 
   const handleApprove = async (bookingId) => {
     try {
@@ -55,6 +58,7 @@ const Bookings = () => {
         }
       );
       if (response.ok) {
+        setIsApproved(true);
         Swal.fire({
           icon: 'success',
           title: 'Approved!',
@@ -64,6 +68,7 @@ const Bookings = () => {
         //   prevRequests.filter((request) => request.bookingId !== bookingId)
         // );
       } else {
+        setIsApproved(false);
         Swal.fire({
           icon: 'error',
           title: 'Error!',
@@ -71,6 +76,7 @@ const Bookings = () => {
         });
       }
     } catch (error) {
+      setIsApproved(false);
       Swal.fire({
         icon: 'error',
         title: 'Error!',
@@ -92,6 +98,7 @@ const Bookings = () => {
         }
       );
       if (response.ok) {
+        setIsRejected(true);
         Swal.fire({
           icon: 'success',
           title: 'Rejected!',
@@ -101,6 +108,8 @@ const Bookings = () => {
         //   prevRequests.filter((request) => request.bookingId !== bookingId)
         // );
       } else {
+        setIsRejected(false);
+
         Swal.fire({
           icon: 'error',
           title: 'Error!',
@@ -108,6 +117,8 @@ const Bookings = () => {
         });
       }
     } catch (error) {
+      setIsRejected(false);
+
       Swal.fire({
         icon: 'error',
         title: 'Error!',
@@ -191,7 +202,7 @@ const Bookings = () => {
                         />
                       </Box> */}
                       </CardContent>
-                      <CardActions>
+                      {isApproved ? <>You have approved the booking request.</> : isRejected ? <>You have rejected this booking request.</> : <CardActions>
                         <Button
                           onClick={() => handleApprove(request?.bookingId)}
                           variant="contained"
@@ -208,7 +219,7 @@ const Bookings = () => {
                         >
                           Reject
                         </Button>
-                      </CardActions>
+                      </CardActions>}
                     </Card>
                   </Grid>
                 ))
