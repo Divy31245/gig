@@ -1,19 +1,12 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Grid,
-  Button,
-  Card,
-  CardContent,
-  CardActions,
-} from "@mui/material";
+import { Box, Typography, Grid, Button, Card, CardContent, CardActions } from "@mui/material";
 import { format } from "date-fns";
 import Header from "../../components/Header/Header";
 import Login from "../login/login";
 import { useSelector } from "react-redux";
 import { selectAuthRoles } from "../../features/authSlice";
+import Swal from "sweetalert2";
 
 const Bookings = () => {
   const { userId } = useParams();
@@ -38,15 +31,27 @@ const Bookings = () => {
     fetchBookingRequests();
   }, [userId, roles]);
 
-  const updateBookingStatus = (index, status) => {
-    setBookingRequests(current =>
-      current.map((request, idx) => {
-        if (idx === index) {
-          return { ...request, isApproved: status === 'approve', isRejected: status === 'reject' };
-        }
-        return request;
-      })
-    );
+  const updateBookingStatus = async (index, status) => {
+    const action = status === 'approve' ? 'Approve' : 'Reject';
+    const result = await Swal.fire({
+      title: `Are you sure you want to ${action.toLowerCase()} this booking?`,
+      showCancelButton: true,
+      confirmButtonText: `${action}`,
+      cancelButtonText: 'Cancel',
+      icon: 'warning'
+    });
+
+    if (result.isConfirmed) {
+      setBookingRequests(current =>
+        current.map((request, idx) => {
+          if (idx === index) {
+            return { ...request, isApproved: status === 'approve', isRejected: status === 'reject' };
+          }
+          return request;
+        })
+      );
+      Swal.fire(`${action}ed!`, `The booking has been ${action.toLowerCase()}ed.`, 'success');
+    }
   };
 
   return (
@@ -62,7 +67,7 @@ const Bookings = () => {
                   <Card sx={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                     <CardContent>
                       <Typography variant="h6">{request.talentSeeker?.name || request.talentArtist?.name}</Typography>
-                      <Typography variant="body1" color="textSecondary" gutterBottom>{request.talentSeeker?.email || request.talentArtist?.email}</Typography>
+                      <Typography variant="body1" color ="textSecondary" gutterBottom>{request.talentSeeker?.email || request.talentArtist?.email}</Typography>
                       <Typography variant="body2" color="textSecondary">Appointment Time: {format(new Date(request.appointmentTime), "dd MMM yyyy HH:mm")}</Typography>
                       <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>Message: {request.message}</Typography>
                     </CardContent>
