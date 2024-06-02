@@ -15,7 +15,7 @@ import Header from "../../components/Header/Header";
 import Login from "../login/login";
 import { useSelector } from "react-redux";
 import { selectAuthRoles } from "../../features/authSlice";
-import Swal from "sweetalert2";  // Import SweetAlert2
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 const Bookings = () => {
   const { userId } = useParams();
@@ -28,10 +28,8 @@ const Bookings = () => {
     const fetchBookingRequests = async () => {
       try {
         const response = roles.includes("talent_artist")
-          ? await fetch(
-            `${apiurl}/user/artist/booking-requests/${userId}`
-          )
-          : await fetch(`${apiurl}/user/seeker/bookings/${userId}`);
+          ? await fetch(${apiurl}/user/artist/booking-requests/${userId})
+          : await fetch(${apiurl}/user/seeker/bookings/${userId});
         const data = await response.json();
         setBookingRequests(data);
       } catch (error) {
@@ -42,14 +40,10 @@ const Bookings = () => {
     fetchBookingRequests();
   }, [userId, roles]);
 
-  const [isApproved, setIsApproved] = useState(false);
-  const [isRejected, setIsRejected] = useState(false);
-
   const handleApprove = async (bookingId) => {
     try {
-      console.log(bookingId);
       const response = await fetch(
-        `${apiurl}/user/bookings/${bookingId}/approve`,
+        ${apiurl}/user/bookings/${bookingId}/approve,
         {
           method: "PUT",
           headers: {
@@ -58,29 +52,29 @@ const Bookings = () => {
         }
       );
       if (response.ok) {
-        setIsApproved(true);
+        const updatedRequest = await response.json();
         Swal.fire({
-          icon: 'success',
-          title: 'Approved!',
-          text: 'The booking request has been approved.',
+          icon: "success",
+          title: "Approved!",
+          text: "The booking request has been approved.",
         });
-        // setBookingRequests((prevRequests) =>
-        //   prevRequests.filter((request) => request.bookingId !== bookingId)
-        // );
+        setBookingRequests((prevRequests) =>
+          prevRequests.map((request) =>
+            request.bookingId === bookingId ? updatedRequest : request
+          )
+        );
       } else {
-        setIsApproved(false);
         Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: 'There was an error approving the booking request.',
+          icon: "error",
+          title: "Error!",
+          text: "There was an error approving the booking request.",
         });
       }
     } catch (error) {
-      setIsApproved(false);
       Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'There was an error approving the booking request.',
+        icon: "error",
+        title: "Error!",
+        text: "There was an error approving the booking request.",
       });
       console.error("Error approving booking request:", error);
     }
@@ -89,7 +83,7 @@ const Bookings = () => {
   const handleReject = async (bookingId) => {
     try {
       const response = await fetch(
-        `${apiurl}/user/bookings/${bookingId}/reject`,
+        ${apiurl}/user/bookings/${bookingId}/reject,
         {
           method: "PUT",
           headers: {
@@ -98,31 +92,29 @@ const Bookings = () => {
         }
       );
       if (response.ok) {
-        setIsRejected(true);
+        const updatedRequest = await response.json();
         Swal.fire({
-          icon: 'success',
-          title: 'Rejected!',
-          text: 'The booking request has been rejected.',
+          icon: "success",
+          title: "Rejected!",
+          text: "The booking request has been rejected.",
         });
-        // setBookingRequests((prevRequests) =>
-        //   prevRequests.filter((request) => request.bookingId !== bookingId)
-        // );
+        setBookingRequests((prevRequests) =>
+          prevRequests.map((request) =>
+            request.bookingId === bookingId ? updatedRequest : request
+          )
+        );
       } else {
-        setIsRejected(false);
-
         Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: 'There was an error rejecting the booking request.',
+          icon: "error",
+          title: "Error!",
+          text: "There was an error rejecting the booking request.",
         });
       }
     } catch (error) {
-      setIsRejected(false);
-
       Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'There was an error rejecting the booking request.',
+        icon: "error",
+        title: "Error!",
+        text: "There was an error rejecting the booking request.",
       });
       console.error("Error rejecting booking request:", error);
     }
@@ -202,24 +194,31 @@ const Bookings = () => {
                         />
                       </Box> */}
                       </CardContent>
-                      {isApproved ? <>You have approved the booking request.</> : isRejected ? <>You have rejected this booking request.</> : <CardActions>
-                        <Button
-                          onClick={() => handleApprove(request?.bookingId)}
-                          variant="contained"
-                          color="primary"
-                          fullWidth
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          onClick={() => handleReject(request?.bookingId)}
-                          variant="outlined"
-                          color="error"
-                          fullWidth
-                        >
-                          Reject
-                        </Button>
-                      </CardActions>}
+                      <CardActions>
+                        {request?.status === "pending" ? (
+                          <>
+                            {" "}
+                            <Button
+                              onClick={() => handleApprove(request?.bookingId)}
+                              variant="contained"
+                              color="primary"
+                              fullWidth
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              onClick={() => handleReject(request?.bookingId)}
+                              variant="outlined"
+                              color="error"
+                              fullWidth
+                            >
+                              Reject
+                            </Button>
+                          </>
+                        ) : (
+                          <>Your Appointment is {request?.status}</>
+                        )}
+                      </CardActions>
                     </Card>
                   </Grid>
                 ))
