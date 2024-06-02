@@ -132,7 +132,8 @@ userRouter.get("/artist/booking-requests/:artistId", async (req, res) => {
           mobileNumber:talentSeeker.mobileNumber
         },
         appointmentTime: booking.date, // Use the date field for appointment time
-        message: booking.messages[0]?.content, // Assuming message content is in the first message
+        message: booking.messages[0]?.content,
+        status:booking.status// Assuming message content is in the first message
       };
     }));
 
