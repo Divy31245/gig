@@ -28,8 +28,8 @@ const Bookings = () => {
     const fetchBookingRequests = async () => {
       try {
         const response = roles.includes("talent_artist")
-          ? await fetch(${apiurl}/user/artist/booking-requests/${userId})
-          : await fetch(${apiurl}/user/seeker/bookings/${userId});
+          ? await fetch(`${apiurl}/user/artist/booking-requests/${userId}`)
+          : await fetch(`${apiurl}/user/seeker/bookings/${userId}`);
         const data = await response.json();
         setBookingRequests(data);
       } catch (error) {
@@ -43,7 +43,7 @@ const Bookings = () => {
   const handleApprove = async (bookingId) => {
     try {
       const response = await fetch(
-        ${apiurl}/user/bookings/${bookingId}/approve,
+        `${apiurl}/user/bookings/${bookingId}/approve`,
         {
           method: "PUT",
           headers: {
@@ -83,7 +83,7 @@ const Bookings = () => {
   const handleReject = async (bookingId) => {
     try {
       const response = await fetch(
-        ${apiurl}/user/bookings/${bookingId}/reject,
+       `${apiurl}/user/bookings/${bookingId}/reject`,
         {
           method: "PUT",
           headers: {
