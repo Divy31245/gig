@@ -8,7 +8,7 @@ const messageSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true,
+    // required: true,
   },
   timestamp: {
     type: Date,
@@ -30,6 +30,10 @@ const bookingSchema1 = new mongoose.Schema({
   date: {
     type: Date,
     required: true,
+  },
+  location: {
+    type: String,
+    // required: true,
   },
   timestamp: {
     type: Date,

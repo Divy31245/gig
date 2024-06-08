@@ -8,8 +8,8 @@ import {
   Card,
   CardContent,
   CardActions,
+  CircularProgress,
 } from "@mui/material";
-import Rating from "@mui/material/Rating";
 import { format } from "date-fns";
 import Header from "../../components/Header/Header";
 import Login from "../login/login";
@@ -17,15 +17,30 @@ import { useSelector } from "react-redux";
 import { selectAuthRoles } from "../../features/authSlice";
 import Swal from "sweetalert2"; // Import SweetAlert2
 
+const Loader = () => (
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+    }}
+  >
+    <CircularProgress />
+  </Box>
+);
+
 const Bookings = () => {
   const { userId } = useParams();
   const roles = useSelector(selectAuthRoles);
   const [bookingRequests, setBookingRequests] = useState([]);
+  const [loading, setLoading] = useState(false); // Loading state
   const [showModal, setShowModal] = useState(false);
   const apiurl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const fetchBookingRequests = async () => {
+      setLoading(true); // Start loading
       try {
         const response = roles.includes("talent_artist")
           ? await fetch(`${apiurl}/user/artist/booking-requests/${userId}`)
@@ -34,13 +49,16 @@ const Bookings = () => {
         setBookingRequests(data);
       } catch (error) {
         console.error("Error fetching booking requests:", error);
+      } finally {
+        setLoading(false); // End loading
       }
     };
 
     fetchBookingRequests();
-  }, [userId, roles]);
+  }, [userId, roles, apiurl]);
 
   const handleApprove = async (bookingId) => {
+    setLoading(true); // Start loading
     try {
       const response = await fetch(
         `${apiurl}/user/bookings/${bookingId}/approve`,
@@ -52,7 +70,6 @@ const Bookings = () => {
         }
       );
       if (response.ok) {
-        const updatedRequest = await response.json();
         Swal.fire({
           icon: "success",
           title: "Approved!",
@@ -60,7 +77,9 @@ const Bookings = () => {
         });
         setBookingRequests((prevRequests) =>
           prevRequests.map((request) =>
-            request.bookingId === bookingId ? updatedRequest : request
+            request.bookingId === bookingId
+              ? { ...request, status: "approved" }
+              : request
           )
         );
       } else {
@@ -77,13 +96,16 @@ const Bookings = () => {
         text: "There was an error approving the booking request.",
       });
       console.error("Error approving booking request:", error);
+    } finally {
+      setLoading(false); // End loading
     }
   };
 
   const handleReject = async (bookingId) => {
+    setLoading(true); // Start loading
     try {
       const response = await fetch(
-       `${apiurl}/user/bookings/${bookingId}/reject`,
+        `${apiurl}/user/bookings/${bookingId}/reject`,
         {
           method: "PUT",
           headers: {
@@ -92,7 +114,6 @@ const Bookings = () => {
         }
       );
       if (response.ok) {
-        const updatedRequest = await response.json();
         Swal.fire({
           icon: "success",
           title: "Rejected!",
@@ -100,7 +121,9 @@ const Bookings = () => {
         });
         setBookingRequests((prevRequests) =>
           prevRequests.map((request) =>
-            request.bookingId === bookingId ? updatedRequest : request
+            request.bookingId === bookingId
+              ? { ...request, status: "rejected" }
+              : request
           )
         );
       } else {
@@ -117,8 +140,14 @@ const Bookings = () => {
         text: "There was an error rejecting the booking request.",
       });
       console.error("Error rejecting booking request:", error);
+    } finally {
+      setLoading(false); // End loading
     }
   };
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <>
@@ -178,26 +207,10 @@ const Bookings = () => {
                         >
                           Message: {request?.message}
                         </Typography>
-                        {/* <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          marginTop: 2,
-                        }}
-                      >
-                        <Rating
-                          value={request.talentSeeker.avgRating}
-                          precision={0.1}
-                          size="small"
-                          readOnly
-                        />
-                      </Box> */}
                       </CardContent>
                       <CardActions>
                         {request?.status === "pending" ? (
                           <>
-                            {" "}
                             <Button
                               onClick={() => handleApprove(request?.bookingId)}
                               variant="contained"
@@ -216,7 +229,13 @@ const Bookings = () => {
                             </Button>
                           </>
                         ) : (
-                          <>Your Appointment is {request?.status}</>
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            sx={{ marginTop: 1 }}
+                          >
+                            Your Appointment is {request?.status}
+                          </Typography>
                         )}
                       </CardActions>
                     </Card>
@@ -236,77 +255,75 @@ const Bookings = () => {
             </Grid>
           </Box>
         ) : (
-          <>
-            <Box sx={{ padding: 2, width: "80%" }}>
-              <Grid container spacing={3}>
-                {bookingRequests?.length ? (
-                  bookingRequests?.map((request) => (
-                    <Grid
-                      item
-                      xs={12}
-                      sm={6}
-                      md={4}
-                      lg={3}
-                      key={request.bookingId}
-                    >
-                      <Card
-                        sx={{
-                          height: "100%",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <CardContent>
-                          <Typography variant="h6">
-                            {request?.talentArtist?.name}
-                          </Typography>
-                          <Typography
-                            variant="body1"
-                            color="textSecondary"
-                            gutterBottom
-                          >
-                            {request?.talentArtist?.email}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            Appointment Time:{" "}
-                            {format(
-                              new Date(request?.appointmentTime),
-                              "dd MMM yyyy HH:mm"
-                            )}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="textSecondary"
-                            sx={{ marginTop: 1 }}
-                          >
-                            Message: {request?.message}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="textSecondary"
-                            sx={{ marginTop: 1 }}
-                          >
-                            Status: {request?.status}
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))
-                ) : (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "45%",
-                    }}
+          <Box sx={{ padding: 2, width: "80%" }}>
+            <Grid container spacing={3}>
+              {bookingRequests?.length ? (
+                bookingRequests?.map((request) => (
+                  <Grid
+                    item
+                    xs={12}
+                    sm={6}
+                    md={4}
+                    lg={3}
+                    key={request.bookingId}
                   >
-                    No Booking Requests
-                  </div>
-                )}
-              </Grid>
-            </Box>
-          </>
+                    <Card
+                      sx={{
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <CardContent>
+                        <Typography variant="h6">
+                          {request?.talentArtist?.name}
+                        </Typography>
+                        <Typography
+                          variant="body1"
+                          color="textSecondary"
+                          gutterBottom
+                        >
+                          {request?.talentArtist?.email}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Appointment Time:{" "}
+                          {format(
+                            new Date(request?.appointmentTime),
+                            "dd MMM yyyy HH:mm"
+                          )}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          sx={{ marginTop: 1 }}
+                        >
+                          Message: {request?.message}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="textSecondary"
+                          sx={{ marginTop: 1 }}
+                        >
+                          Status: {request?.status}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))
+              ) : (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "45%",
+                  }}
+                >
+                  No Booking Requests
+                </div>
+              )}
+            </Grid>
+          </Box>
         )}
       </div>
     </>

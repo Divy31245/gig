@@ -53,7 +53,7 @@ userRouter.get("/ratings-dist/:talentid", getRatingDistribution);
 
 userRouter.post("/book", async (req, res) => {
   try {
-    const { talentSeekerId, talentArtistId, date, message } = req.body;
+    const { talentSeekerId, talentArtistId, date, message,location } = req.body;
 
     const talentSeeker = await User.findById(talentSeekerId);
     const talentArtist = await User.findById(talentArtistId);
@@ -72,6 +72,7 @@ userRouter.post("/book", async (req, res) => {
           content: message,
         },
       ],
+      location:location
     });
 
     await booking.save();
@@ -131,7 +132,8 @@ userRouter.get("/artist/booking-requests/:artistId", async (req, res) => {
           email: talentSeeker.email,
           mobileNumber:talentSeeker.mobileNumber
         },
-        appointmentTime: booking.date, // Use the date field for appointment time
+        appointmentTime: booking.date,
+        location:booking.location, // Use the date field for appointment time
         message: booking.messages[0]?.content,
         status:booking.status// Assuming message content is in the first message
       };
@@ -208,7 +210,8 @@ userRouter.get("/seeker/bookings/:seekerId", async (req, res) => {
         },
         appointmentTime: booking.date, // Use the date field for appointment time
         message: booking.messages[0]?.content, // Assuming message content is in the first message
-        status: booking.status // Assuming you have a 'status' field in your Booking schema
+        status: booking.status,
+        location:booking.location // Assuming you have a 'status' field in your Booking schema
       };
     }));
 
