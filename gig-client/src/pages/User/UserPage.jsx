@@ -9,7 +9,11 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import "./userStyles.css";
 import Login from "../login/login";
 import { useSelector } from "react-redux";
-import { selectUserId } from "../../features/authSlice";
+import {
+  selectAuthRoles,
+  selectIsLoggedIn,
+  selectUserId,
+} from "../../features/authSlice";
 import { formatDistanceToNow } from "date-fns";
 import {
   TextField,
@@ -37,6 +41,8 @@ import CurrencyRupee from "@mui/icons-material/CurrencyRupee";
 const UserPage = () => {
   const { id } = useParams();
   const userId = useSelector(selectUserId);
+  const isloggedin = useSelector(selectIsLoggedIn);
+  const roles = useSelector(selectAuthRoles);
   const [user, setUser] = useState();
   const [ratings, setRatings] = useState([]);
   const [distribution, setDistribution] = useState({});
@@ -45,7 +51,9 @@ const UserPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [bookingLocation, setBookingLocation] = useState("");
   const [bookingMessage, setBookingMessage] = useState("");
+  const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
   const apiurl = process.env.REACT_APP_API_URL;
 
@@ -77,9 +85,7 @@ const UserPage = () => {
 
   const getRatingDistribution = async () => {
     try {
-      const response = await fetch(
-        `${apiurl}/user/ratings-dist/${id}`
-      );
+      const response = await fetch(`${apiurl}/user/ratings-dist/${id}`);
       const data = await response.json();
       setDistribution(data);
     } catch (error) {
@@ -146,7 +152,8 @@ const UserPage = () => {
             talentSeekerId: userId,
             talentArtistId: id,
             date: selectedDate,
-            message: bookingMessage, // Include message in booking request
+            location: bookingLocation,
+            message: bookingMessage,
           }),
         });
 
@@ -155,6 +162,8 @@ const UserPage = () => {
         }
 
         // Handle successful booking (e.g., show a success message)
+        setBookingConfirmed(true);
+        setTimeout(() => setBookingConfirmed(false), 3000);
       } catch (error) {
         console.error("Error booking artist:", error);
       }
@@ -165,10 +174,6 @@ const UserPage = () => {
   const handleDateChange = (date) => {
     setSelectedDate(date);
   };
-
-  // const handleDatePickerClose = () => {
-  //   setShowDatePicker(false);
-  // };
 
   const calculateAverageRating = () => {
     const totalRatings = Object.values(distribution)?.reduce(
@@ -244,19 +249,19 @@ const UserPage = () => {
               </div>
               <div className="pricing">
                 {" "}
-                Pricing  {user?.profile?.pricing?.min}<CurrencyRupee fontSize="0.7rem" /> -{" "}
-                {user?.profile?.pricing?.max}<CurrencyRupee fontSize="0.7rem" />
+                Pricing {user?.profile?.pricing?.min}
+                <CurrencyRupee fontSize="0.7rem" /> -{" "}
+                {user?.profile?.pricing?.max}
+                <CurrencyRupee fontSize="0.7rem" />
               </div>
-              <div className="pricing">
-                {user?.profile?.location}
-              </div>
+              <div className="pricing">{user?.profile?.location}</div>
             </div>
             <button className="book-now-btn" onClick={handleBookNowClick}>
               Book Now
             </button>
           </div>
           <div className="description">{user?.profile?.description}</div>
-  
+
           <Box
             sx={{
               padding: 3,
@@ -356,51 +361,53 @@ const UserPage = () => {
                   ))}
               </List>
             </Box>
-            <Box
-              sx={{
-                marginTop: 3,
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                fontSize: "12px",
-              }}
-            >
-              <Typography variant="h6">Give a Rating</Typography>
-              <Rating
-                value={userRating}
-                onChange={(event, newValue) => setUserRating(newValue)}
-                precision={1}
-              />
-              <textarea
-                value={userComment}
-                onChange={(e) => setUserComment(e.target.value)}
-                placeholder="Leave a comment"
-                rows={4}
-                style={{
+            {isloggedin && (
+              <Box
+                sx={{
+                  marginTop: 3,
                   width: "100%",
-                  marginTop: 10,
-                  resize: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
                   fontSize: "12px",
                 }}
-              />
-              <Button
-                onClick={submitRating}
-                variant="contained"
-                sx={{
-                  marginTop: 2,
-                  backgroundColor: "black",
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "white",
-                    color: "black",
-                    border: "1px solid black",
-                  },
-                }}
               >
-                Submit Rating
-              </Button>
-            </Box>
+                <Typography variant="h6">Give a Rating</Typography>
+                <Rating
+                  value={userRating}
+                  onChange={(event, newValue) => setUserRating(newValue)}
+                  precision={1}
+                />
+                <textarea
+                  value={userComment}
+                  onChange={(e) => setUserComment(e.target.value)}
+                  placeholder="Leave a comment"
+                  rows={4}
+                  style={{
+                    width: "100%",
+                    marginTop: 10,
+                    resize: "none",
+                    fontSize: "12px",
+                  }}
+                />
+                <Button
+                  onClick={submitRating}
+                  variant="contained"
+                  sx={{
+                    marginTop: 2,
+                    backgroundColor: "black",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "white",
+                      color: "black",
+                      border: "1px solid black",
+                    },
+                  }}
+                >
+                  Submit Rating
+                </Button>
+              </Box>
+            )}
           </Box>
         </div>
       </div>
@@ -422,6 +429,15 @@ const UserPage = () => {
             inline
           />
           <TextField
+            label="Location"
+            variant="outlined"
+            value={bookingLocation}
+            onChange={(e) => setBookingLocation(e.target.value)}
+            required
+            fullWidth
+            sx={{ marginTop: "1rem" }}
+          />
+          <TextField
             label="Message"
             multiline
             rows={4}
@@ -441,6 +457,20 @@ const UserPage = () => {
           </Button>
           <Button onClick={() => handleDatePickerClose(true)} color="primary">
             Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={bookingConfirmed}
+        onClose={() => setBookingConfirmed(false)}
+      >
+        <DialogTitle>Booking Confirmation</DialogTitle>
+        <DialogContent>
+          <Typography>Your booking has been confirmed!</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBookingConfirmed(false)} color="primary">
+            Close
           </Button>
         </DialogActions>
       </Dialog>

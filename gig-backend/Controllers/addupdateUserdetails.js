@@ -49,7 +49,7 @@ export const updateUser = async (req, res) => {
           description: updates.description,
           portfolio: updates.portfolio,
           pricing: updates.pricing,
-          location: updates.pricing,
+          location: updates.location,
         });
       }
     }
@@ -299,7 +299,6 @@ export const addRating = async (req, res) => {
 export const addRating2 = async (req, res) => {
   try {
     const { talentid } = req.params;
-    console.log(talentid);
     const { ratings } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(talentid)) {
@@ -316,11 +315,12 @@ export const addRating2 = async (req, res) => {
       // If profile not found, create a new one
       profile = new Profile({
         user: talentid,
-        category: [], // Default category, adjust as needed
-        description: "", // Default description, adjust as needed
-        portfolio: [], // Default portfolio, adjust as needed
+        category: [],
+        description: "",
+        portfolio: [],
         ratings: [],
-        profileImage: "", // Default profile image, adjust as needed
+        profileImage: "",
+        location:""
       });
     }
 
@@ -335,12 +335,25 @@ export const addRating2 = async (req, res) => {
         return res.status(400).json({ message: "Invalid user ID for rating" });
       }
 
-      profile.ratings.push({
-        user: ratedByUserId,
-        rating,
-        comment,
-        createdAt: new Date(),
-      });
+      // Check if the user has already rated this profile
+      const existingRatingIndex = profile.ratings.findIndex(
+        (r) => r.user.toString() === ratedByUserId
+      );
+
+      if (existingRatingIndex !== -1) {
+        // Update the existing rating
+        profile.ratings[existingRatingIndex].rating = rating;
+        profile.ratings[existingRatingIndex].comment = comment;
+        profile.ratings[existingRatingIndex].createdAt = new Date();
+      } else {
+        // Add a new rating
+        profile.ratings.push({
+          user: ratedByUserId,
+          rating,
+          comment,
+          createdAt: new Date(),
+        });
+      }
     }
 
     await profile.save();

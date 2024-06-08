@@ -25,7 +25,7 @@ function SignUpForm() {
     roles: ["talent_seeker"],
     category: [],
     description: "",
-    portfolio: [],
+    portfolio: [""], // Initial portfolio state with one empty URL
   });
 
   const [selectedRole, setSelectedRole] = useState("talent_seeker");
@@ -51,11 +51,15 @@ function SignUpForm() {
   }, [successmsg, errormsg, dispatch]);
 
   const handleChange = (evt) => {
-    const value = evt.target.value;
+    const { name, value } = evt.target;
     setState({
       ...state,
-      [evt.target.name]: value,
+      [name]: value,
     });
+  };
+
+  const handlePortfolioChange = (value) => {
+    setState({ ...state, portfolio: [value] });
   };
 
   const validateForm = () => {
@@ -69,6 +73,11 @@ function SignUpForm() {
       return "Please select at least one category.";
     if (state.roles.includes("talent_artist") && !state.description)
       return "Description is required.";
+    const urlRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$/;
+    if (state.roles.includes("talent_artist")) {
+      if (!urlRegex.test(state.portfolio[0]))
+        return "Please provide a valid YouTube URL.";
+    }
     return null;
   };
 
@@ -82,12 +91,16 @@ function SignUpForm() {
       return;
     }
     dispatch(registerAsync(state));
-    for (const key in state) {
-      setState({
-        ...state,
-        [key]: "",
-      });
-    }
+    setState({
+      name: "",
+      email: "",
+      password: "",
+      mobileNumber: "",
+      roles: ["talent_seeker"],
+      category: [],
+      description: "",
+      portfolio: [""], // Reset portfolio to initial state
+    });
   };
 
   const handleRoleSelection = (role) => {
@@ -210,6 +223,16 @@ function SignUpForm() {
                 placeholder="Tell us more about yourself"
                 className="no-resize-textarea input-labels"
               ></textarea>
+              <div className="portfolio-section">
+                <div className="category-title">Add your portfolio (YouTube URL)</div>
+                <input
+                  type="text"
+                  value={state.portfolio[0]}
+                  onChange={(e) => handlePortfolioChange(e.target.value)}
+                  placeholder="YouTube URL"
+                  className="input-labels"
+                />
+              </div>
             </div>
           )}
 
