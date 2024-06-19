@@ -17,7 +17,7 @@ function SignUpForm() {
   const dispatch = useDispatch();
   const successmsg = useSelector(selectAuthMessage);
   const errormsg = useSelector((state) => state.auth.error);
-
+  console.log(errormsg);
   const [state, setState] = useState({
     name: "",
     email: "",
@@ -135,7 +135,7 @@ function SignUpForm() {
 
   return (
     <div className="form-container sign-up-container">
-      {!signedup && !showError ? (
+      {!signedup && !showError && !errormsg ? (
         <div className="sign-in-form">
           <div className="spn2">Are you a</div>
           <div className="btn-div">
@@ -228,7 +228,9 @@ function SignUpForm() {
                 className="no-resize-textarea input-labels"
               ></textarea>
               <div className="portfolio-section">
-                <div className="category-title">Add your portfolio (YouTube URL)</div>
+                <div className="category-title">
+                  Add your portfolio (YouTube URL)
+                </div>
                 <input
                   type="text"
                   value={state.portfolio[0]}
@@ -240,16 +242,22 @@ function SignUpForm() {
             </div>
           )}
 
-          <button className="signup-btn" onClick={handleOnSubmit} disabled={loading}>
+          <button
+            className="signup-btn"
+            onClick={handleOnSubmit}
+            disabled={loading}
+          >
             {loading ? <CircularProgress size={24} /> : "Sign Up"}
           </button>
         </div>
+      ) : showError ? (
+        <div className="error-message">{validationError}</div>
+      ) : errormsg ? (
+        <div className="error-message">
+          {"Error Registring the User Email Alerady Exists! Please Try Again!"}
+        </div>
       ) : (
-        showError ? (
-          <div className="error-message">{validationError}</div>
-        ) : (
-          <div>User signed up successfully! Please log in to continue.</div>
-        )
+        <div>User signed up successfully! Please log in to continue.</div>
       )}
     </div>
   );
