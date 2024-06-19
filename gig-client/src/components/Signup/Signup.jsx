@@ -11,12 +11,13 @@ import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
+import CircularProgress from "@mui/material/CircularProgress"; // Import CircularProgress from Material-UI
 
 function SignUpForm() {
   const dispatch = useDispatch();
   const successmsg = useSelector(selectAuthMessage);
   const errormsg = useSelector((state) => state.auth.error);
-
+  console.log(errormsg);
   const [state, setState] = useState({
     name: "",
     email: "",
@@ -25,7 +26,7 @@ function SignUpForm() {
     roles: ["talent_seeker"],
     category: [],
     description: "",
-    portfolio: [],
+    portfolio: [""], // Initial portfolio state with one empty URL
   });
 
   const [selectedRole, setSelectedRole] = useState("talent_seeker");
@@ -33,6 +34,7 @@ function SignUpForm() {
   const [signedup, setSignedup] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [showError, setShowError] = useState(false);
+  const [loading, setLoading] = useState(false); // New state for loading
 
   useEffect(() => {
     setTimeout(() => setSignedup(false), 5000);
@@ -48,14 +50,19 @@ function SignUpForm() {
       toast.error(errormsg);
       dispatch(clearMessages());
     }
+    setLoading(false); // Stop loading after success or error
   }, [successmsg, errormsg, dispatch]);
 
   const handleChange = (evt) => {
-    const value = evt.target.value;
+    const { name, value } = evt.target;
     setState({
       ...state,
-      [evt.target.name]: value,
+      [name]: value,
     });
+  };
+
+  const handlePortfolioChange = (value) => {
+    setState({ ...state, portfolio: [value] });
   };
 
   const validateForm = () => {
@@ -92,13 +99,18 @@ function SignUpForm() {
       setTimeout(() => setShowError(false), 2000);
       return;
     }
+    setLoading(true); // Set loading to true when the form is submitted
     dispatch(registerAsync(state));
-    for (const key in state) {
-      setState({
-        ...state,
-        [key]: "",
-      });
-    }
+    setState({
+      name: "",
+      email: "",
+      password: "",
+      mobileNumber: "",
+      roles: ["talent_seeker"],
+      category: [],
+      description: "",
+      portfolio: [""], // Reset portfolio to initial state
+    });
   };
 
   const handleRoleSelection = (role) => {
@@ -129,7 +141,7 @@ function SignUpForm() {
 
   return (
     <div className="form-container sign-up-container">
-      {!signedup && !showError ? (
+      {!signedup && !showError && !errormsg ? (
         <div className="sign-in-form">
           <div className="spn2">Are you a</div>
           <div className="btn-div">
@@ -221,19 +233,37 @@ function SignUpForm() {
                 placeholder="Tell us more about yourself"
                 className="no-resize-textarea input-labels"
               ></textarea>
+              <div className="portfolio-section">
+                <div className="category-title">
+                  Add your portfolio (YouTube URL)
+                </div>
+                <input
+                  type="text"
+                  value={state.portfolio[0]}
+                  onChange={(e) => handlePortfolioChange(e.target.value)}
+                  placeholder="YouTube URL"
+                  className="input-labels"
+                />
+              </div>
             </div>
           )}
 
-          <button className="signup-btn" onClick={handleOnSubmit}>
-            Sign Up
+          <button
+            className="signup-btn"
+            onClick={handleOnSubmit}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : "Sign Up"}
           </button>
         </div>
+      ) : showError ? (
+        <div className="error-message">{validationError}</div>
+      ) : errormsg ? (
+        <div className="error-message">
+          {"Error Registring the User Email Alerady Exists! Please Try Again!"}
+        </div>
       ) : (
-        showError ? (
-          <div className="error-message">{validationError}</div>
-        ) : (
-          <div>User signed up successfully! Please log in to continue.</div>
-        )
+        <div>User signed up successfully! Please log in to continue.</div>
       )}
     </div>
   );
