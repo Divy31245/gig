@@ -11,13 +11,12 @@ import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
-import CircularProgress from "@mui/material/CircularProgress"; // Import CircularProgress from Material-UI
 
 function SignUpForm() {
   const dispatch = useDispatch();
   const successmsg = useSelector(selectAuthMessage);
   const errormsg = useSelector((state) => state.auth.error);
-  console.log(errormsg);
+
   const [state, setState] = useState({
     name: "",
     email: "",
@@ -26,7 +25,7 @@ function SignUpForm() {
     roles: ["talent_seeker"],
     category: [],
     description: "",
-    portfolio: [""], // Initial portfolio state with one empty URL
+    portfolio: [],
   });
 
   const [selectedRole, setSelectedRole] = useState("talent_seeker");
@@ -34,7 +33,6 @@ function SignUpForm() {
   const [signedup, setSignedup] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [showError, setShowError] = useState(false);
-  const [loading, setLoading] = useState(false); // New state for loading
 
   useEffect(() => {
     setTimeout(() => setSignedup(false), 5000);
@@ -50,19 +48,14 @@ function SignUpForm() {
       toast.error(errormsg);
       dispatch(clearMessages());
     }
-    setLoading(false); // Stop loading after success or error
   }, [successmsg, errormsg, dispatch]);
 
   const handleChange = (evt) => {
-    const { name, value } = evt.target;
+    const value = evt.target.value;
     setState({
       ...state,
-      [name]: value,
+      [evt.target.name]: value,
     });
-  };
-
-  const handlePortfolioChange = (value) => {
-    setState({ ...state, portfolio: [value] });
   };
 
   const validateForm = () => {
@@ -71,7 +64,9 @@ function SignUpForm() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(state.email)) return "Email format is invalid.";
     if (!state.mobileNumber) return "Mobile Number is required.";
-    if (!state.password) return "Password is required.";
+    if (!state.password) {
+      return "Password is required.";
+    }
     if (state.roles.includes("talent_artist") && state.category.length === 0)
       return "Please select at least one category.";
     if (state.roles.includes("talent_artist") && !state.description)
@@ -80,6 +75,10 @@ function SignUpForm() {
     if (state.roles.includes("talent_artist")) {
       if (!urlRegex.test(state.portfolio[0]))
         return "Please provide a valid YouTube URL.";
+    }
+    if(state.password){
+     const bool = state.password.length >= 8 && /[a-z]/i.test(state.password.length) && /[0-9]/.test(state.password.length);
+     return bool ? "" : "Password must be 8 characters long.";
     }
     return null;
   };
@@ -93,18 +92,13 @@ function SignUpForm() {
       setTimeout(() => setShowError(false), 2000);
       return;
     }
-    setLoading(true); // Set loading to true when the form is submitted
     dispatch(registerAsync(state));
-    setState({
-      name: "",
-      email: "",
-      password: "",
-      mobileNumber: "",
-      roles: ["talent_seeker"],
-      category: [],
-      description: "",
-      portfolio: [""], // Reset portfolio to initial state
-    });
+    for (const key in state) {
+      setState({
+        ...state,
+        [key]: "",
+      });
+    }
   };
 
   const handleRoleSelection = (role) => {
@@ -135,7 +129,7 @@ function SignUpForm() {
 
   return (
     <div className="form-container sign-up-container">
-      {!signedup && !showError && !errormsg ? (
+      {!signedup && !showError ? (
         <div className="sign-in-form">
           <div className="spn2">Are you a</div>
           <div className="btn-div">
@@ -227,38 +221,19 @@ function SignUpForm() {
                 placeholder="Tell us more about yourself"
                 className="no-resize-textarea input-labels"
               ></textarea>
-              <div className="portfolio-section">
-                <div className="category-title">
-                  Add your portfolio (YouTube URL)
-                </div>
-                <input
-                  type="text"
-                  value={state.portfolio[0]}
-                  onChange={(e) => handlePortfolioChange(e.target.value)}
-                  placeholder="YouTube URL"
-                  className="input-labels"
-                />
-              </div>
             </div>
           )}
 
-
-          <button
-            className="signup-btn"
-            onClick={handleOnSubmit}
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={24} /> : "Sign Up"}
+          <button className="signup-btn" onClick={handleOnSubmit}>
+            Sign Up
           </button>
         </div>
-      ) : showError ? (
-        <div className="error-message">{validationError}</div>
-      ) : errormsg ? (
-        <div className="error-message">
-          {"Error Registring the User Email Alerady Exists! Please Try Again!"}
-        </div>
       ) : (
-        <div>User signed up successfully! Please log in to continue.</div>
+        showError ? (
+          <div className="error-message">{validationError}</div>
+        ) : (
+          <div>User signed up successfully! Please log in to continue.</div>
+        )
       )}
     </div>
   );
