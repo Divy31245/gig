@@ -30,11 +30,7 @@ const registerSchema = Joi.object({
     then: Joi.string().required(),
     otherwise: Joi.string().allow(null, ''),
   }),
-  portfolio: Joi.when("roles", {
-    is: Joi.array().items(Joi.string().valid("talent_artist")).min(1),
-    then: Joi.array().items(Joi.string()).required(),
-    otherwise: Joi.array().items(Joi.string()).allow(null, ''),
-  }),
+  portfolio: Joi.array().items(Joi.string().allow(null, "")).allow(null, "")
 });
 
 
