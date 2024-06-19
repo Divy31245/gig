@@ -11,6 +11,7 @@ import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
+import CircularProgress from "@mui/material/CircularProgress"; // Import CircularProgress from Material-UI
 
 function SignUpForm() {
   const dispatch = useDispatch();
@@ -33,6 +34,7 @@ function SignUpForm() {
   const [signedup, setSignedup] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [showError, setShowError] = useState(false);
+  const [loading, setLoading] = useState(false); // New state for loading
 
   useEffect(() => {
     setTimeout(() => setSignedup(false), 5000);
@@ -48,6 +50,7 @@ function SignUpForm() {
       toast.error(errormsg);
       dispatch(clearMessages());
     }
+    setLoading(false); // Stop loading after success or error
   }, [successmsg, errormsg, dispatch]);
 
   const handleChange = (evt) => {
@@ -90,6 +93,7 @@ function SignUpForm() {
       setTimeout(() => setShowError(false), 2000);
       return;
     }
+    setLoading(true); // Set loading to true when the form is submitted
     dispatch(registerAsync(state));
     setState({
       name: "",
@@ -236,8 +240,8 @@ function SignUpForm() {
             </div>
           )}
 
-          <button className="signup-btn" onClick={handleOnSubmit}>
-            Sign Up
+          <button className="signup-btn" onClick={handleOnSubmit} disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : "Sign Up"}
           </button>
         </div>
       ) : (
