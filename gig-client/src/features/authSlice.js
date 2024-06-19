@@ -77,6 +77,14 @@ const authSlice = createSlice({
       .addCase(registerAsync.fulfilled, (state, action) => {
         state.loading = false;
         state.msg = action.payload.message;
+        // console.log(action.error.message);
+        state.error= null
+      })
+      .addCase(registerAsync.rejected, (state, action) => {
+        state.loading = false;
+        // state.msg = action.payload.message;
+        console.log(action);
+        state.error= action.error.message
       })
       .addCase(googleloginAsync.fulfilled, (state, action) => {
         state.loading = false;
