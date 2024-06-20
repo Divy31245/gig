@@ -83,9 +83,10 @@ function SignUpForm() {
       if (!urlRegex.test(state.portfolio[0]))
         return "Please provide a valid YouTube URL.";
     }
-    if(state.password){
+    
      const bool = state.password.length >= 8 && /[a-z]/i.test(state.password.length) && /[0-9]/.test(state.password.length);
-     return bool ? "" : "Password must be 8 characters long.";
+    if(!bool){
+      return "Password must be 8 characters long."
     }
     return null;
   };
