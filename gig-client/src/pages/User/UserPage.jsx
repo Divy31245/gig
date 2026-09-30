@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
@@ -9,11 +9,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import "./userStyles.css";
 import Login from "../login/login";
 import { useSelector } from "react-redux";
-import {
-  selectAuthRoles,
-  selectIsLoggedIn,
-  selectUserId,
-} from "../../features/authSlice";
+import { selectIsLoggedIn, selectUserId } from "../../features/authSlice";
 import { formatDistanceToNow } from "date-fns";
 import {
   TextField,
@@ -42,7 +38,6 @@ const UserPage = () => {
   const { id } = useParams();
   const userId = useSelector(selectUserId);
   const isloggedin = useSelector(selectIsLoggedIn);
-  const roles = useSelector(selectAuthRoles);
   const [user, setUser] = useState();
   const [ratings, setRatings] = useState([]);
   const [distribution, setDistribution] = useState({});
@@ -67,33 +62,7 @@ const UserPage = () => {
     },
   }));
 
-  useEffect(() => {
-    getUserDetails();
-    getUserRatings();
-    getRatingDistribution();
-  }, []);
-
-  const getUserRatings = async () => {
-    try {
-      const response = await fetch(`${apiurl}/user/ratings/${id}`);
-      const data = await response.json();
-      setRatings(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getRatingDistribution = async () => {
-    try {
-      const response = await fetch(`${apiurl}/user/ratings-dist/${id}`);
-      const data = await response.json();
-      setDistribution(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getUserDetails = async () => {
+  const getUserDetails = useCallback(async () => {
     try {
       const response = await fetch(`${apiurl}/user/${id}`);
       const data = await response.json();
@@ -101,7 +70,33 @@ const UserPage = () => {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [apiurl, id]);
+
+  const getUserRatings = useCallback(async () => {
+    try {
+      const response = await fetch(`${apiurl}/user/ratings/${id}`);
+      const data = await response.json();
+      setRatings(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [apiurl, id]);
+
+  const getRatingDistribution = useCallback(async () => {
+    try {
+      const response = await fetch(`${apiurl}/user/ratings-dist/${id}`);
+      const data = await response.json();
+      setDistribution(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [apiurl, id]);
+
+  useEffect(() => {
+    getUserDetails();
+    getUserRatings();
+    getRatingDistribution();
+  }, [getUserDetails, getUserRatings, getRatingDistribution]);
 
   const submitRating = async () => {
     try {
@@ -161,7 +156,6 @@ const UserPage = () => {
           throw new Error("Failed to book artist");
         }
 
-        // Handle successful booking (e.g., show a success message)
         setBookingConfirmed(true);
         setTimeout(() => setBookingConfirmed(false), 3000);
       } catch (error) {
@@ -181,7 +175,7 @@ const UserPage = () => {
       0
     );
     const totalScore = Object.entries(distribution)?.reduce(
-      (sum, [rating, count]) => sum + rating * count,
+      (sum, [rating, count]) => sum + Number(rating) * count,
       0
     );
     return totalRatings ? (totalScore / totalRatings).toFixed(1) : 0;
@@ -250,7 +244,7 @@ const UserPage = () => {
               <div className="pricing">
                 {" "}
                 Pricing {user?.profile?.pricing?.min}
-                <CurrencyRupee fontSize="0.7rem" /> -{" "}
+                <CurrencyRupee fontSize="0.7rem" /> - {" "}
                 {user?.profile?.pricing?.max}
                 <CurrencyRupee fontSize="0.7rem" />
               </div>
@@ -411,10 +405,7 @@ const UserPage = () => {
           </Box>
         </div>
       </div>
-      <Dialog
-        open={showDatePicker}
-        onClose={() => handleDatePickerClose(false)}
-      >
+      <Dialog open={showDatePicker} onClose={() => handleDatePickerClose(false)}>
         <DialogTitle>Select Booking Date</DialogTitle>
         <DialogContent>
           <DatePicker
@@ -449,10 +440,7 @@ const UserPage = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => handleDatePickerClose(false)}
-            color="secondary"
-          >
+          <Button onClick={() => handleDatePickerClose(false)} color="secondary">
             Cancel
           </Button>
           <Button onClick={() => handleDatePickerClose(true)} color="primary">
@@ -460,10 +448,7 @@ const UserPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={bookingConfirmed}
-        onClose={() => setBookingConfirmed(false)}
-      >
+      <Dialog open={bookingConfirmed} onClose={() => setBookingConfirmed(false)}>
         <DialogTitle>Booking Confirmation</DialogTitle>
         <DialogContent>
           <Typography>Your booking has been confirmed!</Typography>
