@@ -13,7 +13,7 @@ const Login = ({ showModal, setShowModal }) => {
     if (isloggin) {
       setShowModal(false);
     }
-  }, [isloggin, showModal]);
+  }, [isloggin, setShowModal]);
   const handleOnClick = (text) => {
     if (text !== type) {
       setType(text);
